@@ -1,0 +1,6 @@
+@HairBooking__API_HostAddress = http://localhost:5102
+
+GET {{HairBooking__API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
