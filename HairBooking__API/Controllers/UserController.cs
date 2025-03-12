@@ -11,7 +11,6 @@ namespace HairBooking__API.Controllers
     public class UserController : ControllerBase
     {
         private readonly AuthService _authService;
-
         private readonly UserService _userService;
         private readonly EncryptionHelper _encryptionHelper;
 
@@ -29,11 +28,11 @@ namespace HairBooking__API.Controllers
             if (existingUser != null) return Conflict("User already exists!");
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
             // mã hóa phone và address
-            newUser.Phone = _encryptionHelper.Encrypt(newUser.Phone); 
+            newUser.Phone = _encryptionHelper.Encrypt(newUser.Phone);
             newUser.Address = _encryptionHelper.Encrypt(newUser.Address);
 
             await _userService.CreateUser(newUser);
-            var token = _authService.GenerateJwtToken(newUser.Id, newUser.Email);
+            var token = _authService.GenerateJwtToken(newUser.Id, newUser.Email, newUser.Role);
             return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, new { user = newUser, token });
         }
         // Đăng nhập
@@ -46,8 +45,8 @@ namespace HairBooking__API.Controllers
             {
                 return Unauthorized("Invalid credentials!");
             }
-            var token = _authService.GenerateJwtToken(user.Id, user.Email);
-            return Ok(new { token });
+            var token = _authService.GenerateJwtToken(user.Id, user.Email, user.Role);
+            return Ok(new { token, user.Role });
         }
         [Authorize(Roles = "admin")]
         [HttpGet]

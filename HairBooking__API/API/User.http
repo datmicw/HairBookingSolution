@@ -1,0 +1,44 @@
+@base = http://localhost:5102/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2QxYTAxNGY2M2YwNDIxYzI0YjJiNTciLCJlbWFpbCI6ImRhdEBleGFtcGxlLmNvbSIsImp0aSI6IjJiY2ZiODUxLTdlNmUtNGM4Yy04NWNhLWE5ZGNlYWM1MWU1ZCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImFkbWluIiwiZXhwIjoxNzQxODQ3NjA1LCJpc3MiOiJtaWN3LmNvbSIsImF1ZCI6Im1pY3cuY29tIn0.lAWGqX-OeYUA_zeAhxV3SenpdxGDAL8OGSd17w1K6cI
+### 1️⃣ Đăng ký user (Create User)
+POST {{base}}/user/register
+Content-Type: application/json
+
+{
+    "email": "dat1@example.com",
+    "password": "123456789",
+    "fullName": "Nguyễn Tấn Đạt",
+    "role": "user"
+}
+
+### 2️⃣ Đăng nhập user (Login)
+POST {{base}}/user/login
+Content-Type: application/json
+
+{
+    "email": "dat@example.com",
+    "password": "123456789"
+}
+
+### 3️⃣ Lấy danh sách users (Read All Users) - Cần quyền admin
+GET {{base}}/user
+Authorization: Bearer {{token}}
+
+### 4️⃣ Lấy thông tin user theo ID (Read One User)
+GET {{base}}/user/1
+# Authorization: Bearer {{TOKEN}}
+
+### 5️⃣ Cập nhật thông tin user (Update User)
+PUT {{base}}/user/1
+Content-Type: application/json
+# Authorization: Bearer {{TOKEN}}
+
+{
+    "email": "dat@example.com",
+    "fullName": "Đạt Nguyễn",
+    "role": "user"
+}
+
+### 6️⃣ Xóa user theo ID (Delete User)
+DELETE {{base}}/user/1
+# Authorization: Bearer {{TOKEN}}
