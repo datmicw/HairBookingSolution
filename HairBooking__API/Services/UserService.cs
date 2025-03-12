@@ -34,6 +34,10 @@ namespace HairBooking__API.Services
         {
             return await _users.Find(user => user.Id == id).FirstOrDefaultAsync();
         }
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _users.Find(user => user.Email == email).FirstOrDefaultAsync();
+        }
 
     }
 }

@@ -1,22 +1,32 @@
 ﻿using HairBooking__API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Đăng ký UserService để làm việc với MongoDB
-builder.Services.AddSingleton<UserService>();
-
-// ✅ Thêm CORS Policy
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        policy =>
+// Cấu hình JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        });
-});
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+        };
+    });
 
+builder.Services.AddAuthorization(); // Thêm Authorization
+
+// Đăng ký các services
+builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<EncryptionHelper>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -29,10 +39,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ✅ Bật CORS
-app.UseCors("AllowAll");
-
 app.UseHttpsRedirection();
+app.UseAuthentication(); // Bắt buộc trước Authorization
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
