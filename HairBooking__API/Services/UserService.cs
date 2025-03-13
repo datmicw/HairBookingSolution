@@ -38,6 +38,11 @@ namespace HairBooking__API.Services
         {
             return await _users.Find(user => user.Email == email).FirstOrDefaultAsync();
         }
+        public async Task<int> CountAdmins()
+        {
+            return (int)await _users.CountDocumentsAsync(user => user.Role == "admin");
+        }
+
 
     }
 }

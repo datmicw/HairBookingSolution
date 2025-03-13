@@ -1,13 +1,14 @@
 @base = http://localhost:5102/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2QxYTAxNGY2M2YwNDIxYzI0YjJiNTciLCJlbWFpbCI6ImRhdEBleGFtcGxlLmNvbSIsImp0aSI6IjJiY2ZiODUxLTdlNmUtNGM4Yy04NWNhLWE5ZGNlYWM1MWU1ZCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImFkbWluIiwiZXhwIjoxNzQxODQ3NjA1LCJpc3MiOiJtaWN3LmNvbSIsImF1ZCI6Im1pY3cuY29tIn0.lAWGqX-OeYUA_zeAhxV3SenpdxGDAL8OGSd17w1K6cI
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2QyNWRjMzU4N2YzNGEyMDAwOGRiN2QiLCJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsImp0aSI6IjY1YTU2NzhiLWRmZGUtNDNiYi04NjI0LTgwMDY5MDE0MTI4MyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6ImFkbWluIiwiZXhwIjoxNzQxODkzOTAwLCJpc3MiOiJtaWN3LmNvbSIsImF1ZCI6Im1pY3cuY29tIn0.DeYbHhl0_XfE8txMTPVVfuaQANlXwJODfRXdED-zKMM
+@idGet = 67d25dc3587f34a20008db7d
 ### 1️⃣ Đăng ký user (Create User)
 POST {{base}}/user/register
 Content-Type: application/json
 
 {
-    "email": "dat1@example.com",
+    "email": "user@user.com",
     "password": "123456789",
-    "fullName": "Nguyễn Tấn Đạt",
+    "fullName": "user",
     "role": "user"
 }
 
@@ -16,7 +17,7 @@ POST {{base}}/user/login
 Content-Type: application/json
 
 {
-    "email": "dat@example.com",
+    "email": "admin@admin.com",
     "password": "123456789"
 }
 
@@ -25,11 +26,11 @@ GET {{base}}/user
 Authorization: Bearer {{token}}
 
 ### 4️⃣ Lấy thông tin user theo ID (Read One User)
-GET {{base}}/user/1
+GET {{base}}/user/67d25dc3587f34a20008db7d
 # Authorization: Bearer {{TOKEN}}
 
 ### 5️⃣ Cập nhật thông tin user (Update User)
-PUT {{base}}/user/1
+PUT {{base}}/user/{{idGet}}
 Content-Type: application/json
 # Authorization: Bearer {{TOKEN}}
 

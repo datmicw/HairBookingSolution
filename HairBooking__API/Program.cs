@@ -1,11 +1,17 @@
-﻿using HairBooking__API.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
+using HairBooking__API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Cấu hình JWT Authentication
+var secretKey = configuration["Jwt:Secret"] ?? throw new InvalidOperationException("SecretKey is missing in appsettings.json!");
+var issuer = configuration["Jwt:Issuer"];
+var audience = configuration["Jwt:Audience"];
+
+// cấu hình JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -15,33 +21,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+
+            // 🛠 Đảm bảo lấy role đúng format
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+
         };
     });
 
-builder.Services.AddAuthorization(); // Thêm Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, "admin"));
+});
 
-// Đăng ký các services
-builder.Services.AddSingleton<UserService>();
-builder.Services.AddSingleton<AuthService>();
-builder.Services.AddSingleton<EncryptionHelper>();
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthentication(); // Bắt buộc trước Authorization
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.Run();

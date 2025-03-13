@@ -1,39 +1,35 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
 
 namespace HairBooking__API.Services
 {
-    public class AuthService
+    public class AuthService(IConfiguration configuration)
     {
-        private readonly IConfiguration _config;
-
-        public AuthService(IConfiguration config)
-        {
-            _config = config;
-        }
+        private readonly string _secretKey = configuration["Jwt:Secret"] ?? throw new ArgumentNullException(nameof(configuration));
+        private readonly string _issuer = configuration["Jwt:Issuer"] ?? throw new ArgumentNullException(nameof(configuration));
+        private readonly string _audience = configuration["Jwt:Audience"] ?? throw new ArgumentNullException(nameof(configuration));
 
         public string GenerateJwtToken(string userId, string email, string role)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Secret"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Role, role)
+                new(JwtRegisteredClaimNames.Sub, userId),
+                new(JwtRegisteredClaimNames.Email, email),
+                new("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", role),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: _issuer,
+                audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(15), // token hết hạn sau 15 giờ
-                signingCredentials: creds
-            );
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
