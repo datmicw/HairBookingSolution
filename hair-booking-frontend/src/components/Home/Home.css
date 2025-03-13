@@ -1,11 +1,11 @@
-.home-container {
+.home-content {
   max-width: 600px;
-  margin: 50px auto;
+  margin: 0 auto;
   padding: 20px;
   text-align: center;
 }
 
-.home-container h1 {
+.home-content h1 {
   color: #333;
   margin-bottom: 20px;
 }

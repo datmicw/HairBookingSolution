@@ -1,17 +1,17 @@
-.register-container {
+.register-content {
   max-width: 400px;
-  margin: 50px auto;
+  margin: 0 auto;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.register-container h2 {
+.register-content h2 {
   text-align: center;
   margin-bottom: 20px;
 }
 
-.register-container input {
+.register-content input {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
@@ -20,7 +20,7 @@
   box-sizing: border-box;
 }
 
-.register-container button {
+.register-content button {
   width: 100%;
   padding: 10px;
   background-color: #007bff;
@@ -31,19 +31,30 @@
   margin: 10px 0;
 }
 
-.register-container button:hover {
+.register-content button:hover:not(:disabled) {
   background-color: #0056b3;
 }
 
-.register-container p {
+.register-content button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.register-content p {
   text-align: center;
 }
 
-.register-container a {
+.register-content a {
   color: #007bff;
   text-decoration: none;
 }
 
-.register-container a:hover {
+.register-content a:hover {
   text-decoration: underline;
+}
+
+.register-content .error {
+  color: #dc3545;
+  text-align: center;
+  margin: 10px 0;
 }

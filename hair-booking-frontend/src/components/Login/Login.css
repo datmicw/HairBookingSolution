@@ -1,17 +1,17 @@
-.login-container {
+.login-content {
   max-width: 400px;
-  margin: 50px auto;
+  margin: 0 auto;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.login-container h2 {
+.login-content h2 {
   text-align: center;
   margin-bottom: 20px;
 }
 
-.login-container input {
+.login-content input {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
@@ -20,7 +20,7 @@
   box-sizing: border-box;
 }
 
-.login-container button {
+.login-content button {
   width: 100%;
   padding: 10px;
   background-color: #007bff;
@@ -31,19 +31,30 @@
   margin: 10px 0;
 }
 
-.login-container button:hover {
+.login-content button:hover:not(:disabled) {
   background-color: #0056b3;
 }
 
-.login-container p {
+.login-content button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.login-content p {
   text-align: center;
 }
 
-.login-container a {
+.login-content a {
   color: #007bff;
   text-decoration: none;
 }
 
-.login-container a:hover {
+.login-content a:hover {
   text-decoration: underline;
+}
+
+.login-content .error {
+  color: #dc3545;
+  text-align: center;
+  margin: 10px 0;
 }

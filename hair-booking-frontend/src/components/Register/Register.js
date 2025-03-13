@@ -15,7 +15,7 @@ function Register() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5001/api/user/register', {
+      const response = await fetch('http://localhost:3000/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ function Register() {
   };
 
   return (
-    <div className="register-container">
+    <div className="register-content">
       <h2>Register</h2>
       {error && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
