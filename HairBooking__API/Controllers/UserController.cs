@@ -31,8 +31,10 @@ namespace HairBooking__API.Controllers
             var existingUser = await _userService.GetUserByEmail(newUser.Email);
             if (existingUser != null) return Conflict("User already exists!");
 
+            // Hash password before saving
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
             newUser.Role = "user";
+            newUser.CreatedAt = DateTime.UtcNow;
 
             Console.WriteLine($"✅ Creating User: {newUser.Email} - {newUser.Role}");
 
@@ -42,16 +44,21 @@ namespace HairBooking__API.Controllers
             return Ok(new { token, user = newUser });
         }
 
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        [HttpPost("user-login")]
+        public async Task<IActionResult> Login([FromBody] Dictionary<string, string> request)
         {
-            var user = await _userService.GetUserByEmail(request.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            if (request == null || !request.ContainsKey("email_customer") || !request.ContainsKey("password"))
+                return BadRequest("Email and Password are required!");
+
+            string email = request["email_customer"];
+            string password = request["password"];
+
+            var user = await _userService.GetUserByEmail(email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return Unauthorized("Invalid credentials!");
 
             var token = _authService.GenerateJwtToken(user.Id, user.Email, user.Role);
-            return Ok(new { token, user.Role });
+            return Ok(new { token, role = user.Role });
         }
 
         [Authorize(Policy = "AdminOnly")]
@@ -62,12 +69,5 @@ namespace HairBooking__API.Controllers
             return Ok(users);
         }
 
-        [Authorize]
-        [HttpGet("debugClaims")]
-        public IActionResult DebugClaims()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(new { claims });
-        }
     }
 }
