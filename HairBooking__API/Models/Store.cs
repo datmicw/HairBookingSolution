@@ -20,11 +20,11 @@ namespace HairBooking__API.Models
         [BsonElement("store_email")]
         public string? StoreEmail { get; set; } = string.Empty;
         [BsonElement("store_bio")]
-        public string Bio { get; set; } = string.Empty;
+        public string StoreBio { get; set; } = string.Empty;
 
         [BsonElement("owner_id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string OwnerId { get; set; } = string.Empty; 
+        public string OwnerId { get; set; } = string.Empty;
         [BsonElement("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

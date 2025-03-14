@@ -26,9 +26,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = issuer,
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-
-            // 🛠 Đảm bảo lấy role đúng format
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = ClaimTypes.Role // Sử dụng Claim Role để xác định quyền
         };
     });
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -49,43 +47,10 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireClaim(ClaimTypes.Role, "admin"));
-});
-
-// ✅ Cấu hình Swagger (với JWT)
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "HairBooking API",
-        Version = "v1",
-        Description = "API for HairBooking App",
-    });
-
-    // 🛠 Cấu hình Swagger hỗ trợ Authorization (Bearer Token)
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter 'Bearer {your_token}' to authenticate."
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+    options.AddPolicy("UserOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, "user"));
+    options.AddPolicy("OwnerStore", policy =>
+        policy.RequireClaim(ClaimTypes.Role, "owner"));
 });
 
 // ✅ Thêm các dịch vụ API
@@ -99,16 +64,6 @@ builder.Services.AddScoped<StoreService>();
 
 var app = builder.Build();
 
-// ✅ Cấu hình Swagger UI
-if (app.Environment.IsDevelopment()) 
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "HairBooking API v1");
-        c.RoutePrefix = string.Empty; // Truy cập Swagger tại http://localhost:5000/
-    });
-}
 app.UseRouting();
 app.UseCors(MyAllowSpecificOrigins); // Áp dụng CORS
 app.UseAuthorization();

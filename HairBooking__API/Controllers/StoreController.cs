@@ -56,6 +56,30 @@ namespace HairBooking__API.Controllers
             if (stores == null || stores.Count == 0) return NotFound("Stores not found!");
             return Ok(stores);
         }
+        [HttpPut("update-store/{storeId}")]
+        public async Task<ActionResult<Store>> UpdateStore(string storeId, [FromBody] Store updatedStore)
+        {
+            var store = await _storeService.GetStoreById(storeId);
+            if (store == null) return NotFound("Store not found!");
+
+            store.StoreName = updatedStore.StoreName;
+            store.StoreAddress = updatedStore.StoreAddress;
+            store.StorePhone = updatedStore.StorePhone;
+            store.StoreEmail = updatedStore.StoreEmail;
+            store.StoreBio = updatedStore.StoreBio;
+            store.UpdatedAt = DateTime.UtcNow;
+            await _storeService.UpdateStore(storeId, store);
+            return Ok(store);
+        }
+        [HttpDelete("delete-store/{storeId}")]
+        public async Task<ActionResult> DeleteStore(string storeId)
+        {
+            var store = await _storeService.GetStoreById(storeId);
+            if (store == null) return NotFound("Store not found!");
+
+            await _storeService.DeleteStore(storeId);
+            return Ok("Store deleted!");
+        }
 
     }
 }
