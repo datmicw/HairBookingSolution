@@ -46,5 +46,9 @@ namespace HairBooking__API.Services
         {
             return await _store.Find(store => store.OwnerId == userId).ToListAsync();
         }
+        public async Task<Store?> GetStoreByName(string slug)
+        {
+            return await _store.Find(store => store.StoreName == slug).FirstOrDefaultAsync();
+        }
     }
 }

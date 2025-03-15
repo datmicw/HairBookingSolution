@@ -34,7 +34,7 @@ function Layout({ children, isAuthenticated, setIsAuthenticated }) {
                   className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Home <span className="dropdown-arrow">▼</span>
+                  HOME <span className="dropdown-arrow"></span>
                 </NavLink>
                 <div className="dropdown-content">
                   <NavLink to="/home/features">Features</NavLink>
@@ -47,12 +47,8 @@ function Layout({ children, isAuthenticated, setIsAuthenticated }) {
                   className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Profile <span className="dropdown-arrow">▼</span>
+                  PROFILE <span className="dropdown-arrow"></span>
                 </NavLink>
-                <div className="dropdown-content">
-                  <NavLink to="/profile/edit">Edit Profile</NavLink>
-                  <NavLink to="/profile/view">View Profile</NavLink>
-                </div>
               </div>
               <div className="dropdown">
                 <NavLink 
@@ -60,25 +56,34 @@ function Layout({ children, isAuthenticated, setIsAuthenticated }) {
                   className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Settings <span className="dropdown-arrow">▼</span>
+                  SETTINGS <span className="dropdown-arrow"> </span>
                 </NavLink>
                 <div className="dropdown-content">
                   <NavLink to="/settings/account">Account</NavLink>
                   <NavLink to="/settings/privacy">Privacy</NavLink>
                 </div>
               </div>
+              <div className="dropdown">
               <NavLink 
                 to="/store" 
                 className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Store
+                STORE
               </NavLink>
+              </div>
             </div>
 
             <div className="nav-secondary">
               {isAuthenticated ? (
                 <>
+                <NavLink 
+                    to="/contact" 
+                    className="nav-secondary-item"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    CONTACT
+                  </NavLink>
                   <NavLink 
                     to="/search" 
                     className="nav-secondary-item"
@@ -86,15 +91,9 @@ function Layout({ children, isAuthenticated, setIsAuthenticated }) {
                   >
                     <span className="search-icon">🔍</span>
                   </NavLink>
-                  <NavLink 
-                    to="/contact" 
-                    className="nav-secondary-item"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Contact
-                  </NavLink>
+                  
                   <button onClick={handleLogout} className="cta-btn">
-                    Logout
+                    LOGOUT
                   </button>
                 </>
               ) : (
@@ -114,7 +113,7 @@ function Layout({ children, isAuthenticated, setIsAuthenticated }) {
                     Book a meeting
                   </NavLink>
                   <NavLink to="/try" className="cta-btn" onClick={() => setIsMenuOpen(false)}>
-                    Try HAIR
+                    Try HAIR Now
                   </NavLink>
                 </>
               )}

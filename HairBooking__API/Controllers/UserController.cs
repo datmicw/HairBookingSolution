@@ -1,9 +1,7 @@
 ﻿using HairBooking__API.Models;
 using HairBooking__API.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HairBooking__API.Controllers
 {
@@ -13,61 +11,171 @@ namespace HairBooking__API.Controllers
     {
         private readonly UserService _userService;
         private readonly AuthService _authService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(UserService userService, AuthService authService)
+        public UserController(UserService userService, AuthService authService, ILogger<UserController> logger)
         {
             _userService = userService;
             _authService = authService;
+            _logger = logger;
         }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser([FromBody] User newUser)
+        [HttpPost("register-user")]
+        public async Task<ActionResult<UserResponse>> RegisterUser([FromBody] RegisterRequest newUser)
         {
-            Console.WriteLine($"📢 Registering User: {newUser.Email}");
+            try
+            {
+                _logger.LogInformation("📢 Registering User: {Email}", newUser.Email);
+                if (string.IsNullOrEmpty(newUser.Email) || string.IsNullOrEmpty(newUser.Password))
+                    return BadRequest("Email and Password are required!");
 
-            if (string.IsNullOrEmpty(newUser.Email) || string.IsNullOrEmpty(newUser.Password))
-                return BadRequest("Email and Password are required!");
+                var existingUser = await _userService.GetUserByEmail(newUser.Email);
+                if (existingUser != null) return Conflict("User already exists!");
 
-            var existingUser = await _userService.GetUserByEmail(newUser.Email);
-            if (existingUser != null) return Conflict("User already exists!");
+                var user = new User
+                {
+                    Name = newUser.Name,
+                    Email = newUser.Email,
+                    Phone = newUser.Phone,
+                    Address = newUser.Address,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
+                    Role = UserRole.User,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    SlugCustomer = newUser.Email.ToLower().Replace("@", "-").Replace(".", "-") 
+                };
 
-            // Hash password before saving
-            newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
-            newUser.Role = "user";
-            newUser.CreatedAt = DateTime.UtcNow;
+                await _userService.CreateUser(user);
+                var token = _authService.GenerateJwtToken(user.Id, user.Email, UserRole.User.ToString());
 
-            Console.WriteLine($"✅ Creating User: {newUser.Email} - {newUser.Role}");
+                var response = new UserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Address = user.Address,
+                    CreatedAt = user.CreatedAt,
+                    StoreId = user.StoreId,
+                    SlugCustomer = user.SlugCustomer
+                };
 
-            await _userService.CreateUser(newUser);
-            var token = _authService.GenerateJwtToken(newUser.Id, newUser.Email, newUser.Role);
-
-            return Ok(new { token, user = newUser });
+                _logger.LogInformation("✅ User registered: {Email}", user.Email);
+                return Ok(new { token, user = response });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error registering user: {Email}", newUser.Email);
+                return StatusCode(500, "An error occurred while registering the user.");
+            }
         }
 
-        [HttpPost("user-login")]
-        public async Task<IActionResult> Login([FromBody] Dictionary<string, string> request)
+        [HttpPost("login-user")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (request == null || !request.ContainsKey("email_customer") || !request.ContainsKey("password"))
-                return BadRequest("Email and Password are required!");
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.EmailCustomer) || string.IsNullOrEmpty(request.Password))
+                    return BadRequest("Email and Password are required!");
 
-            string email = request["email_customer"];
-            string password = request["password"];
+                var user = await _userService.GetUserByEmail(request.EmailCustomer);
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+                    return Unauthorized("Invalid credentials!");
 
-            var user = await _userService.GetUserByEmail(email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
-                return Unauthorized("Invalid credentials!");
+                var token = _authService.GenerateJwtToken(user.Id, user.Email, user.Role.ToString());
+                return Ok(new { token, role = user.Role });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error logging in user: {Email}", request.EmailCustomer);
+                return StatusCode(500, "An error occurred while logging in.");
+            }
+        }
 
-            var token = _authService.GenerateJwtToken(user.Id, user.Email, user.Role);
-            return Ok(new { token, role = user.Role });
+        [HttpGet("get-user/{userId}")]
+        public async Task<ActionResult<UserResponse>> GetUser(string userId)
+        {
+            try
+            {
+                var user = await _userService.GetUserById(userId);
+                if (user == null) return NotFound("User not found!");
+
+                var response = new UserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Address = user.Address,
+                    CreatedAt = user.CreatedAt,
+                    StoreId = user.StoreId,
+                    SlugCustomer = user.SlugCustomer
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error retrieving user: {UserId}", userId);
+                return StatusCode(500, "An error occurred while retrieving the user.");
+            }
         }
 
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userService.GetAllUsers();
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetAllUsers();
+                var response = users.Select(user => new UserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Address = user.Address,
+                    CreatedAt = user.CreatedAt,
+                    StoreId = user.StoreId,
+                    SlugCustomer = user.SlugCustomer
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error retrieving all users");
+                return StatusCode(500, "An error occurred while retrieving users.");
+            }
         }
+    }
 
+    public class RegisterRequest
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class LoginRequest
+    {
+        public string EmailCustomer { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class UserResponse
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string? Phone { get; set; }
+        public UserRole Role { get; set; }
+        public string? Address { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string? StoreId { get; set; }
+        public string SlugCustomer { get; set; }
     }
 }
